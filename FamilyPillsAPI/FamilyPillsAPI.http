@@ -1,0 +1,63 @@
+@FamilyPillsAPI_HostAddress = http://localhost:5000
+@FamilyPillsAPI_HostAddress_https = https://localhost:5001
+
+### 1. Lấy danh sách tất cả thuốc
+GET {{FamilyPillsAPI_HostAddress}}/api/medicines
+Accept: application/json
+
+### 2. Lấy chi tiết một thuốc (Id = 1)
+GET {{FamilyPillsAPI_HostAddress}}/api/medicines/1
+Accept: application/json
+
+### 3. Thêm thuốc mới
+POST {{FamilyPillsAPI_HostAddress}}/api/medicines
+Content-Type: application/json
+
+{
+  "name": "Thuốc cảm cúm",
+  "barcode": "BARCODE001",
+  "totalQuantity": 100,
+  "unit": "viên",
+  "expiryDate": "2026-12-31",
+  "imagePath": "/images/flu.png",
+  "quantity": "100",
+  "isRunningLow": false,
+  "isExpired": false
+}
+
+### 4. Cập nhật thuốc (Id = 1)
+PUT {{FamilyPillsAPI_HostAddress}}/api/medicines/1
+Content-Type: application/json
+
+{
+  "name": "Aspirin 500mg",
+  "barcode": "1234567890",
+  "totalQuantity": 80,
+  "unit": "viên",
+  "expiryDate": "2025-12-31",
+  "imagePath": "/images/aspirin.png",
+  "quantity": "80",
+  "isRunningLow": true,
+  "isExpired": false
+}
+
+### 5. Xóa thuốc (Id = 4)
+DELETE {{FamilyPillsAPI_HostAddress}}/api/medicines/4
+Accept: application/json
+
+### 6. Cập nhật thuốc mới (Test để xem lỗi - không tồn tại)
+PUT {{FamilyPillsAPI_HostAddress}}/api/medicines/999
+Content-Type: application/json
+
+{
+  "name": "Thuốc không tồn tại",
+  "barcode": "NONE",
+  "totalQuantity": 0,
+  "unit": "viên",
+  "expiryDate": "2025-12-31",
+  "imagePath": "",
+  "quantity": "0",
+  "isRunningLow": false,
+  "isExpired": false
+}
+
