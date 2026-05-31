@@ -1,4 +1,4 @@
-namespace FamilyPillsAPI.Models.Dto
+﻿namespace FamilyPillsAPI.Models.Dto
 {
     public class RegisterRequest
     {
@@ -79,5 +79,11 @@ namespace FamilyPillsAPI.Models.Dto
     public class DeleteResponse
     {
         public int DeletedMedicineId { get; set; }
+    }
+
+    // Nhập tên cần thay đổi 
+    public class ChangeNameRequest
+    {
+        public string NewFullName { get; set; } = string.Empty;
     }
 }

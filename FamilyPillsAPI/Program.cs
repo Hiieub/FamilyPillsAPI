@@ -1,4 +1,4 @@
-
+﻿
 using FamilyPillsAPI.Data;
 using FamilyPillsAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -97,6 +97,7 @@ namespace FamilyPillsAPI
             app.MapControllers();
 
             app.Run();
+
         }
 
         private static void EnsureDatabaseSchema(WebApplication app)
