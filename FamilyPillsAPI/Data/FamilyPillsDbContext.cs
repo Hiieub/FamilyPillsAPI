@@ -10,11 +10,25 @@ namespace FamilyPillsAPI.Data
         {
         }
 
+        public DbSet<User> Users { get; set; } = null!;
         public DbSet<Medicine> Medicines { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Password).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.FullName).HasMaxLength(255);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                    .ValueGeneratedOnAddOrUpdate();
+            });
 
             // Configure Medicine entity
             modelBuilder.Entity<Medicine>(entity =>

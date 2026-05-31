@@ -8,8 +8,8 @@ namespace FamilyPillsAPI.Models
     public class ApiResponse<T>
     {
         public string Message { get; set; }
-        public T Data { get; set; }
-        public ErrorInfo Error { get; set; }
+        public T? Data { get; set; }
+        public ErrorInfo? Error { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         public ApiResponse(string message, T data)
@@ -43,7 +43,7 @@ namespace FamilyPillsAPI.Models
     {
         public string Code { get; set; }
         public string Details { get; set; }
-        public string Field { get; set; }
+        public string? Field { get; set; }
 
         public ErrorInfo(string code, string details)
         {
@@ -51,7 +51,7 @@ namespace FamilyPillsAPI.Models
             Details = details;
         }
 
-        public ErrorInfo(string code, string details, string field)
+        public ErrorInfo(string code, string details, string? field)
         {
             Code = code;
             Details = details;

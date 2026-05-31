@@ -2,37 +2,37 @@ namespace FamilyPillsAPI.Models.Dto
 {
     public class RegisterRequest
     {
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string FullName { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string? FullName { get; set; }
     }
 
     public class LoginRequest
     {
-        public string Email { get; set; }
-        public string Password { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 
     public class AuthResponse
     {
         public int UserId { get; set; }
-        public string Email { get; set; }
-        public string FullName { get; set; }
-        public string Token { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string? FullName { get; set; }
+        public string Token { get; set; } = string.Empty;
         public long TokenExpiry { get; set; }
     }
 
     public class TokenResponse
     {
-        public string Token { get; set; }
+        public string Token { get; set; } = string.Empty;
         public long TokenExpiry { get; set; }
     }
 
     public class UserProfileResponse
     {
         public int UserId { get; set; }
-        public string Email { get; set; }
-        public string FullName { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string? FullName { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime LastLogin { get; set; }
         public int MedicineCount { get; set; }
@@ -40,8 +40,8 @@ namespace FamilyPillsAPI.Models.Dto
 
     public class ChangePasswordRequest
     {
-        public string CurrentPassword { get; set; }
-        public string NewPassword { get; set; }
+        public string CurrentPassword { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
     }
 
     public class MedicineListResponse
@@ -55,8 +55,8 @@ namespace FamilyPillsAPI.Models.Dto
 
     public class ImageUploadResponse
     {
-        public string ImagePath { get; set; }
-        public string FileName { get; set; }
+        public string ImagePath { get; set; } = string.Empty;
+        public string FileName { get; set; } = string.Empty;
         public long FileSize { get; set; }
         public DateTime UploadedAt { get; set; }
     }
@@ -64,7 +64,7 @@ namespace FamilyPillsAPI.Models.Dto
     public class BarcodeValidationResponse
     {
         public bool Exists { get; set; }
-        public Medicine Medicine { get; set; }
+        public Medicine? Medicine { get; set; }
     }
 
     public class StatsResponse

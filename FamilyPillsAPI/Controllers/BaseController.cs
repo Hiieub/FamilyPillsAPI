@@ -28,7 +28,7 @@ namespace FamilyPillsAPI.Controllers
         /// <summary>
         /// Return error response (400)
         /// </summary>
-        protected ActionResult<ApiResponse<T>> BadRequestResponse<T>(string message, string errorCode, string field = null)
+        protected ActionResult<ApiResponse<T>> BadRequestResponse<T>(string message, string errorCode, string? field = null)
         {
             var error = new ErrorInfo(errorCode, message, field);
             return BadRequest(new ApiResponse<T>(message, error));
@@ -55,7 +55,7 @@ namespace FamilyPillsAPI.Controllers
         /// <summary>
         /// Return server error response (500)
         /// </summary>
-        protected ActionResult<ApiResponse<T>> ServerErrorResponse<T>(string message, string errorCode = "SERVER_ERROR", Exception ex = null)
+        protected ActionResult<ApiResponse<T>> ServerErrorResponse<T>(string message, string errorCode = "SERVER_ERROR", Exception? ex = null)
         {
             var details = ex?.Message ?? message;
             var error = new ErrorInfo(errorCode, details);
