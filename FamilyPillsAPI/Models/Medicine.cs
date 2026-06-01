@@ -10,6 +10,9 @@ namespace FamilyPillsAPI.Models
         [Column("id")]
         public int Id { get; set; }
 
+        [Column("user_id")]
+        public int? UserId { get; set; }
+
         [Column("name")]
         [Required]
         [StringLength(255)]
@@ -48,5 +51,7 @@ namespace FamilyPillsAPI.Models
 
         [Column("is_expired")]
         public bool IsExpired { get; set; }
+
+        public User? User { get; set; }
     }
 }
