@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Data.Common;
 using System.Text;
 
 namespace FamilyPillsAPI
@@ -89,6 +90,8 @@ namespace FamilyPillsAPI
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.UseStaticFiles();
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -203,6 +206,68 @@ namespace FamilyPillsAPI
                         ON DELETE CASCADE
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
                 """);
+
+            EnsureColumn(dbContext, "medicines", "user_id", "INT NULL");
+            EnsureIndex(dbContext, "medicines", "idx_medicines_user_id", "user_id");
+        }
+
+        private static void EnsureColumn(FamilyPillsDbContext dbContext, string tableName, string columnName, string columnDefinition)
+        {
+            using var command = dbContext.Database.GetDbConnection().CreateCommand();
+            command.CommandText = """
+                SELECT COUNT(*)
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = @tableName
+                  AND COLUMN_NAME = @columnName
+                """;
+            AddParameter(command, "@tableName", tableName);
+            AddParameter(command, "@columnName", columnName);
+
+            OpenConnectionIfNeeded(dbContext);
+            var exists = Convert.ToInt32(command.ExecuteScalar()) > 0;
+            if (!exists)
+            {
+                dbContext.Database.ExecuteSqlRaw("ALTER TABLE `" + tableName + "` ADD COLUMN `" + columnName + "` " + columnDefinition);
+            }
+        }
+
+        private static void EnsureIndex(FamilyPillsDbContext dbContext, string tableName, string indexName, string columnName)
+        {
+            using var command = dbContext.Database.GetDbConnection().CreateCommand();
+            command.CommandText = """
+                SELECT COUNT(*)
+                FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = @tableName
+                  AND INDEX_NAME = @indexName
+                """;
+            AddParameter(command, "@tableName", tableName);
+            AddParameter(command, "@indexName", indexName);
+
+            OpenConnectionIfNeeded(dbContext);
+            var exists = Convert.ToInt32(command.ExecuteScalar()) > 0;
+            if (!exists)
+            {
+                dbContext.Database.ExecuteSqlRaw("ALTER TABLE `" + tableName + "` ADD INDEX `" + indexName + "` (`" + columnName + "`)");
+            }
+        }
+
+        private static void OpenConnectionIfNeeded(FamilyPillsDbContext dbContext)
+        {
+            var connection = dbContext.Database.GetDbConnection();
+            if (connection.State != System.Data.ConnectionState.Open)
+            {
+                connection.Open();
+            }
+        }
+
+        private static void AddParameter(DbCommand command, string name, object value)
+        {
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = name;
+            parameter.Value = value;
+            command.Parameters.Add(parameter);
         }
     }
 }

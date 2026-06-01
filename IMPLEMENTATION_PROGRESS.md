@@ -1,6 +1,6 @@
 # FamilyPills Implementation Progress
 
-Last updated: 2026-05-31
+Last updated: 2026-06-01
 
 ## Current Status
 
@@ -65,13 +65,7 @@ The backend and frontend are partially integrated for Feature 1 Authentication. 
 
 ## Feature 2: Cabinet / Medicine Management
 
-### Currently Present
-
-- Basic `Medicine` model.
-- Basic `MedicinesController` CRUD.
-- Android cabinet UI, adapter, and partial repository/viewmodel files.
-
-### Still Needed
+### Backend Done
 
 - Require JWT authorization on medicine endpoints.
 - Scope medicine queries by authenticated `user_id`.
@@ -79,44 +73,58 @@ The backend and frontend are partially integrated for Feature 1 Authentication. 
 - Add search by name/barcode.
 - Add filters: all, running low, expired.
 - Check barcode uniqueness per user.
-- Update Android `CabinetViewModel` to call API instead of relying on local/mock state.
-- Wire delete/edit flows to backend.
-- Add empty/loading/error states in Cabinet UI.
+- `GET /api/medicines/stats` — per-user stats (total, running low, expired, expiring soon within 30 days).
+- `GET /api/medicines/validate-barcode/{barcode}` — check if barcode exists for current user.
+- `POST /api/medicines/upload-image` — upload medicine image (max 5MB, saved to `wwwroot/uploads/medicines/`).
+- `app.UseStaticFiles()` enabled in `Program.cs` for serving uploaded images.
+
+### Frontend Done
+
+- `MedicineRepository` wraps all medicine API calls including CRUD, stats, barcode validation, and image upload.
+- `CabinetFragment` loads medicine list from API with correct English filter constants (`all`, `runningLow`, `expired`).
+- All three filter buttons wired: "Đang dùng" (all), "Sắp hết" (runningLow), "Hết hạn" (expired).
+- Loading/error state observation in `CabinetFragment` (ProgressBar + Toast).
+- `onResume()` reload in `CabinetFragment` so newly added/edited medicines appear immediately.
+- Delete medicine calls API and refreshes list.
+- Edit medicine navigates to `AddMedicineActivity` with `medicine_id` extra.
 
 ## Feature 3: Add/Edit Medicine, Image, Barcode
 
-### Currently Present
+### Backend Done
 
-- Android Add Medicine screens exist as UI skeletons.
-- API contract exists in docs.
+- `POST /api/medicines/upload-image` endpoint with file validation (max 5MB, image/* content type).
+- `GET /api/medicines/validate-barcode/{barcode}` endpoint.
+- Image storage under `wwwroot/uploads/medicines/`.
+
+### Frontend Done
+
+- `AddMedicineInfoFragment` form collects name, barcode, quantity, unit, expiry date, and image.
+- Save button calls `addMedicine()` API with validation (name required, quantity >= 0).
+- Edit mode loads existing medicine data from `getMedicineById()` API and populates form.
+- Edit save calls `updateMedicine()` API.
+- Button disabled during API call, re-enabled on response.
+- CameraX barcode scanning via ML Kit returns result to form.
+- CameraX photo capture returns image path to form.
 
 ### Still Needed
 
-- Backend `POST /api/medicines/upload-image`.
-- Backend `GET /api/medicines/validate-barcode/{barcode}`.
-- Local image storage under `wwwroot/images/medicines`.
-- File validation: JPG/PNG only, max 5MB.
-- Android form submission to POST/PUT medicine.
-- Android edit mode should load existing medicine from API.
-- Android image capture/upload integration.
-- Android barcode scan result should call validate-barcode API.
+- Wire captured image upload to `uploadMedicineImage()` API before saving medicine.
+- Wire barcode scan result to `validateBarcode()` API for duplicate warning.
 
 ## Feature 4: Home / Dashboard
 
-### Currently Present
+### Backend Done
 
-- Android Home UI/ViewModel files exist.
-- `StatsResponse` model exists.
+- `GET /api/medicines/stats` endpoint returns per-user totals.
+- Calculates total medicines, running low count, expired count.
+- Calculates expiring-soon count (ExpiryDate within 30 days, parsed with multiple date formats).
 
-### Still Needed
+### Frontend Done
 
-- Backend `GET /api/medicines/stats`.
-- Calculate per-user total medicines.
-- Calculate running low count.
-- Calculate expired count.
-- Calculate expiring soon count.
-- Android Home should load stats from API.
-- Recent medicines list should load from API.
+- `HomeViewModel.loadDashboardData()` calls `getStats()` API for real dashboard numbers.
+- Recent medicines list loaded from `getAllMedicines()` API (top 4 items).
+- `onResume()` reload in `HomeFragment` so dashboard updates after adding/editing medicines.
+- Hardcoded mock data replaced with live API data.
 
 ## Feature 5: User Profile
 
@@ -170,5 +178,7 @@ http://127.0.0.1:5000/
 
 1. Run `create-database.sql` against local MySQL to make sure all tables exist.
 2. Retest register/login from physical device.
-3. Implement Feature 5 profile endpoints next, because Profile UI already calls those APIs after login.
-4. Then update Medicine APIs to require JWT and filter by `user_id`.
+3. Test full Cabinet flow: add medicine → verify in list → edit → delete.
+4. Test Home dashboard shows real stats from API.
+5. Implement Feature 5 profile endpoints next, because Profile UI already calls those APIs after login.
+6. Wire image upload and barcode validation into AddMedicine flow (currently API endpoints exist but not called from the form).

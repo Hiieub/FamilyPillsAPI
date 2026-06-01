@@ -38,6 +38,10 @@ namespace FamilyPillsAPI.Data
                 entity.Property(e => e.TotalQuantity).IsRequired();
                 entity.Property(e => e.IsRunningLow).HasDefaultValue(false);
                 entity.Property(e => e.IsExpired).HasDefaultValue(false);
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }
