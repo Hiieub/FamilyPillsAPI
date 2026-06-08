@@ -145,14 +145,7 @@ namespace FamilyPillsAPI.Controllers
 
             if (!string.IsNullOrWhiteSpace(medicine.Barcode))
             {
-                var barcode = medicine.Barcode.Trim();
-                var exists = await _context.Medicines.AnyAsync(m => m.UserId == userId.Value && m.Barcode == barcode);
-                if (exists)
-                {
-                    return BadRequestResponse<Medicine>("Ma vach da ton tai", "DUPLICATE_BARCODE", "barcode");
-                }
-
-                medicine.Barcode = barcode;
+                medicine.Barcode = medicine.Barcode.Trim();
             }
 
             medicine.Id = 0;
@@ -193,17 +186,7 @@ namespace FamilyPillsAPI.Controllers
 
             if (!string.IsNullOrWhiteSpace(medicine.Barcode))
             {
-                var barcode = medicine.Barcode.Trim();
-                var exists = await _context.Medicines.AnyAsync(m =>
-                    m.UserId == userId.Value &&
-                    m.Id != id &&
-                    m.Barcode == barcode);
-                if (exists)
-                {
-                    return BadRequestResponse<Medicine>("Ma vach da ton tai", "DUPLICATE_BARCODE", "barcode");
-                }
-
-                existingMedicine.Barcode = barcode;
+                existingMedicine.Barcode = medicine.Barcode.Trim();
             }
             else
             {
@@ -309,9 +292,12 @@ namespace FamilyPillsAPI.Controllers
                 return UnauthorizedResponse<BarcodeValidationResponse>("Token khong hop le", "INVALID_TOKEN");
             }
 
+            barcode = barcode.Trim();
             var medicine = await _context.Medicines
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.UserId == userId.Value && m.Barcode == barcode);
+                .Where(m => m.UserId == userId.Value && m.Barcode == barcode)
+                .OrderByDescending(m => m.Id)
+                .FirstOrDefaultAsync();
 
             var response = new BarcodeValidationResponse
             {

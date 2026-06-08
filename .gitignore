@@ -485,3 +485,6 @@ $RECYCLE.BIN/
 
 # Ignore Development settings for team collaboration
 appsettings.Development.json
+
+# Runtime uploads
+FamilyPillsAPI/wwwroot/uploads/
