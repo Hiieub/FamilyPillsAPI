@@ -1,4 +1,4 @@
-﻿namespace FamilyPillsAPI.Models.Dto
+namespace FamilyPillsAPI.Models.Dto
 {
     public class RegisterRequest
     {
@@ -35,7 +35,6 @@
         public string? FullName { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime LastLogin { get; set; }
-        public int MedicineCount { get; set; }
     }
 
     public class ChangePasswordRequest

@@ -44,11 +44,16 @@ namespace FamilyPillsAPI.Controllers
 
             if (filter.Equals("runningLow", StringComparison.OrdinalIgnoreCase))
             {
-                query = query.Where(m => m.IsRunningLow);
+                query = query.Where(m => m.IsRunningLow && !m.IsExpired);
             }
             else if (filter.Equals("expired", StringComparison.OrdinalIgnoreCase))
             {
                 query = query.Where(m => m.IsExpired);
+            }
+            else
+            {
+                // filter == "all" (Đang dùng) -> Chỉ hiện thuốc chưa hết hạn
+                query = query.Where(m => !m.IsExpired);
             }
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -311,7 +316,7 @@ namespace FamilyPillsAPI.Controllers
         [HttpPost("upload-image")]
         [ProducesResponseType(typeof(ApiResponse<ImageUploadResponse>), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ApiResponse<ImageUploadResponse>>> UploadImage(IFormFile file)
+        public async Task<ActionResult<ApiResponse<ImageUploadResponse>>> UploadImage([FromForm] IFormFile file)
         {
             var userId = GetCurrentUserId();
             if (userId == null)
@@ -324,9 +329,9 @@ namespace FamilyPillsAPI.Controllers
                 return BadRequestResponse<ImageUploadResponse>("File khong duoc de trong", "VALIDATION_ERROR", "file");
             }
 
-            if (file.Length > 5 * 1024 * 1024)
+            if (file.Length > 10 * 1024 * 1024)
             {
-                return BadRequestResponse<ImageUploadResponse>("File khong duoc vuot qua 5MB", "VALIDATION_ERROR", "file");
+                return BadRequestResponse<ImageUploadResponse>("File khong duoc vuot qua 10MB", "VALIDATION_ERROR", "file");
             }
 
             if (file.ContentType == null || !file.ContentType.StartsWith("image/"))

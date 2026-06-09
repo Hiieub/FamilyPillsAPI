@@ -1,10 +1,10 @@
 # FamilyPills Implementation Progress
 
-Last updated: 2026-06-01
+Last updated: 2026-06-09
 
 ## Current Status
 
-The backend and frontend are partially integrated for Feature 1 Authentication. The database setup script has been expanded so a fresh local MySQL database can support the current app and the next feature work.
+The backend and Android app are integrated for authentication, medicine cabinet CRUD, barcode scanning/autofill, medicine image capture/gallery upload, cabinet image display, and home dashboard stats.
 
 ## Database
 
@@ -24,7 +24,7 @@ The backend and frontend are partially integrated for Feature 1 Authentication. 
 
 - Decide whether to use EF Core migrations or keep manual SQL scripts. Do not mix both casually.
 - If using existing databases, verify foreign keys on old `medicines` tables because `CREATE TABLE IF NOT EXISTS` will not retrofit constraints on an already-created table.
-- Add `user_id` assignment in medicine APIs after Feature 2 auth scoping is implemented.
+- For old local databases, verify existing medicine rows have the correct `user_id`; legacy rows with null/incorrect user ownership will not appear in authenticated cabinet queries.
 
 ## Feature 1: Authentication
 
@@ -72,11 +72,12 @@ The backend and frontend are partially integrated for Feature 1 Authentication. 
 - Add pagination response shape: `items`, `totalCount`, `pageNumber`, `pageSize`, `totalPages`.
 - Add search by name/barcode.
 - Add filters: all, running low, expired.
-- Check barcode uniqueness per user.
+- Allow multiple medicine records with the same barcode for the same user so identical medicines can be stored with different expiry dates.
 - `GET /api/medicines/stats` — per-user stats (total, running low, expired, expiring soon within 30 days).
-- `GET /api/medicines/validate-barcode/{barcode}` — check if barcode exists for current user.
+- `GET /api/medicines/validate-barcode/{barcode}` — check if barcode exists for current user and return the latest matching medicine as an autofill template.
 - `POST /api/medicines/upload-image` — upload medicine image (max 5MB, saved to `wwwroot/uploads/medicines/`).
 - `app.UseStaticFiles()` enabled in `Program.cs` for serving uploaded images.
+- Runtime image uploads under `FamilyPillsAPI/wwwroot/uploads/` are ignored by Git so user-uploaded files are not pushed to GitHub.
 
 ### Frontend Done
 
@@ -87,14 +88,16 @@ The backend and frontend are partially integrated for Feature 1 Authentication. 
 - `onResume()` reload in `CabinetFragment` so newly added/edited medicines appear immediately.
 - Delete medicine calls API and refreshes list.
 - Edit medicine navigates to `AddMedicineActivity` with `medicine_id` extra.
+- Cabinet medicine cards display uploaded medicine images from `imagePath`; they fall back to the default medicine icon when no image is available or loading fails.
 
 ## Feature 3: Add/Edit Medicine, Image, Barcode
 
 ### Backend Done
 
 - `POST /api/medicines/upload-image` endpoint with file validation (max 5MB, image/* content type).
-- `GET /api/medicines/validate-barcode/{barcode}` endpoint.
+- `GET /api/medicines/validate-barcode/{barcode}` endpoint returns the latest matching medicine for autofill.
 - Image storage under `wwwroot/uploads/medicines/`.
+- Duplicate barcodes are allowed on add/update to support same medicine with different expiry dates.
 
 ### Frontend Done
 
@@ -105,11 +108,11 @@ The backend and frontend are partially integrated for Feature 1 Authentication. 
 - Button disabled during API call, re-enabled on response.
 - CameraX barcode scanning via ML Kit returns result to form.
 - CameraX photo capture returns image path to form.
-
-### Still Needed
-
-- Wire captured image upload to `uploadMedicineImage()` API before saving medicine.
-- Wire barcode scan result to `validateBarcode()` API for duplicate warning.
+- Barcode scan result calls `validateBarcode()` and autofills existing medicine details, while leaving expiry date for the user to choose.
+- Camera capture preview is shown in the form.
+- Gallery picker can select an image from the device library and preview it in the form.
+- Local captured/selected image files are uploaded via `uploadMedicineImage()` before add/update, then the backend `imagePath` is saved with the medicine.
+- Edit mode and barcode autofill can display existing uploaded images from `/uploads/medicines/...`.
 
 ## Feature 4: Home / Dashboard
 
@@ -128,19 +131,22 @@ The backend and frontend are partially integrated for Feature 1 Authentication. 
 
 ## Feature 5: User Profile
 
-### Currently Present
+### Backend Done
 
-- Android Profile UI/ViewModel/Repository skeleton exists.
-- User profile DTO exists in backend.
+- `GET /api/users/profile` – returns authenticated user data + real `MedicineCount` from Medicines table.
+- `PUT /api/users/profile` – updates `FullName`, returns updated `UserProfileResponse`.
+- `POST /api/users/change-password` – verifies current password via BCrypt, hashes and saves new password.
+- All endpoints extend `BaseController` → consistent `ApiResponse<T>` response shape.
+- JWT claim extraction via `TryGetUserId()` helper method.
 
-### Still Needed
+### Frontend Done
 
-- Backend `GET /api/users/profile`.
-- Backend `PUT /api/users/profile`.
-- Backend `POST /api/users/change-password`.
-- Profile should return authenticated user data and medicine count.
-- Change password should verify current password and hash the new password.
-- Update `last_login` on successful login if profile should display it.
+- `UserRepository` calls correct endpoints (`PUT api/users/profile`, `POST api/users/change-password`).
+- `UpdateProfileRequest.newFullName` field matches backend `ChangeNameRequest.NewFullName`.
+- `UserProfile.@SerializedName("userId")` fixed (was `"id"`).
+- `ProfileFragment.onResume()` reloads profile after name change dialog dismisses.
+- Medicine count badge shown in profile card (e.g. "5 loại thuốc").
+- Fallback display name "Người dùng" when `fullName` is null.
 
 ## Local Test Notes
 
@@ -178,7 +184,7 @@ http://127.0.0.1:5000/
 
 1. Run `create-database.sql` against local MySQL to make sure all tables exist.
 2. Retest register/login from physical device.
-3. Test full Cabinet flow: add medicine → verify in list → edit → delete.
+3. Test full Cabinet flow: add medicine with photo/gallery image → verify image in list → edit → delete.
 4. Test Home dashboard shows real stats from API.
 5. Implement Feature 5 profile endpoints next, because Profile UI already calls those APIs after login.
-6. Wire image upload and barcode validation into AddMedicine flow (currently API endpoints exist but not called from the form).
+6. Clean up Vietnamese UI/error strings that are currently mojibake/encoding-corrupted in several XML and Java files.
