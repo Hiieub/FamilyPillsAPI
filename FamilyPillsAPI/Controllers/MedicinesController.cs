@@ -52,7 +52,7 @@ namespace FamilyPillsAPI.Controllers
             }
             else
             {
-                // filter == "all" (Đang dùng) -> Chỉ hiện thuốc chưa hết hạn
+                // hiện thuốc chưa hết hạn
                 query = query.Where(m => !m.IsExpired);
             }
 
@@ -316,7 +316,7 @@ namespace FamilyPillsAPI.Controllers
         [HttpPost("upload-image")]
         [ProducesResponseType(typeof(ApiResponse<ImageUploadResponse>), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ApiResponse<ImageUploadResponse>>> UploadImage([FromForm] IFormFile file)
+        public async Task<ActionResult<ApiResponse<ImageUploadResponse>>> UploadImage(IFormFile file)
         {
             var userId = GetCurrentUserId();
             if (userId == null)
